@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+body {
+  font-family: Arial, sans-serif;
+}
+
+/* DASHBOARD DARK MODE OVERRIDES */
+html.dark body {
+  background-color: #070a07;
+  color: #f2f5f2;
+}
+
+html.dark .bg-white {
+  background-color: #0c110c !important;
+}
+
+html.dark .bg-slate-50 {
+  background-color: #070a07 !important;
+}
+
+html.dark .text-gray-800 {
+  color: #f2f5f2 !important;
+}
+
+html.dark .text-gray-700 {
+  color: #d1dbd1 !important;
+}
+
+html.dark .text-gray-600 {
+  color: #b0c2b0 !important;
+}
+
+html.dark .text-gray-500 {
+  color: #8ca38c !important;
+}
+
+html.dark .text-gray-400 {
+  color: #6a7d6a !important;
+}
+
+html.dark .border-gray-200,
+html.dark .border-gray-150,
+html.dark .border-gray-100 {
+  border-color: rgba(16, 185, 129, 0.15) !important;
+}
+
+html.dark .hover\:bg-slate-50:hover {
+  background-color: #111811 !important;
+}
+
+html.dark .hover\:bg-gray-50:hover {
+  background-color: #111811 !important;
+}
+
+html.dark .bg-gray-50 {
+  background-color: #0c110c !important;
+}
