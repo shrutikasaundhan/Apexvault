@@ -19,3 +19,7 @@ server/build/
 Thumbs.db
 .idea/
 .vscode/
+
+# Private key files
+*.pem
+

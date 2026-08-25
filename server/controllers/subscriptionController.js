@@ -2,9 +2,8 @@ import RazorPay from "razorpay"
 import Subscription from "../models/subscriptionModel.js";
 
 const rzpInstance=new RazorPay({
-    key_id:"rzp_test_TGV5JcN9Yemgac",
-    key_secret:"Tg5Hk5NP9Epoi0Gj8oOi2811"
-
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET
 })
 
 export const createsubscription=async(req,res,next)=>{
