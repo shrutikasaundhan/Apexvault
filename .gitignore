@@ -3,21 +3,19 @@ node_modules/
 client/node_modules/
 server/node_modules/
 
-# Production build directories
-dist/
-client/dist/
-build/
-client/build/
-
-# Sensitive key files and environment variables
+# Environment variables
 .env
 client/.env
 server/.env
-*.pem
-server/*.pem
-private_key.pem
-server/private_key.pem
 
-# OS generated files
+# Build outputs
+client/dist/
+client/build/
+server/dist/
+server/build/
+
+# IDE / System files
 .DS_Store
 Thumbs.db
+.idea/
+.vscode/
