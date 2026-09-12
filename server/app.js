@@ -32,7 +32,13 @@ app.use(express.json());
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || origin.startsWith("http://localhost:")) {
+      if (
+        !origin ||
+        origin.startsWith("http://localhost:") ||
+        origin.includes("netlify.app") ||
+        origin.includes("vercel.app") ||
+        (process.env.CLIENT_URL && origin === process.env.CLIENT_URL)
+      ) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));

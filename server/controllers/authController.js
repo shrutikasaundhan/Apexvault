@@ -94,6 +94,8 @@ export const loginWithGoogle = async (req, res, next) => {
         httpOnly: true,
         signed: true,
         maxAge: sessionExpiryTime,
+        sameSite: "none",
+        secure: true,
       });
 
       return res.json({ message: "logged in" });
@@ -146,6 +148,8 @@ export const loginWithGoogle = async (req, res, next) => {
         httpOnly: true,
         signed: true,
         maxAge: sessionExpiryTime,
+        sameSite: "none",
+        secure: true,
       });
 
       await mongooseSession.commitTransaction();
@@ -187,6 +191,8 @@ export const loginWithGoogle = async (req, res, next) => {
             httpOnly: true,
             signed: true,
             maxAge: sessionExpiryTime,
+            sameSite: "none",
+            secure: true,
           });
 
           return res.status(201).json({ message: "account created and logged in" });
@@ -307,6 +313,8 @@ export const loginWithGithub = async (req, res, next) => {
         httpOnly: true,
         signed: true,
         maxAge: sessionExpiryTime,
+        sameSite: "none",
+        secure: true,
       });
 
       return res.json({ message: "logged in" });
@@ -358,6 +366,8 @@ export const loginWithGithub = async (req, res, next) => {
         httpOnly: true,
         signed: true,
         maxAge: sessionExpiryTime,
+        sameSite: "none",
+        secure: true,
       });
 
       await mongooseSession.commitTransaction();
@@ -399,6 +409,8 @@ export const loginWithGithub = async (req, res, next) => {
             httpOnly: true,
             signed: true,
             maxAge: sessionExpiryTime,
+            sameSite: "none",
+            secure: true,
           });
 
           return res.status(201).json({ message: "account created and logged in" });

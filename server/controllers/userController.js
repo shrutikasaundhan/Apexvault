@@ -168,6 +168,8 @@ export const login = async (req, res, next) => {
       httpOnly: true,
       signed: true,
       maxAge: sessionExpiryTime,
+      sameSite: "none",
+      secure: true,
     });
     res.json({ message: "logged in" });
   } catch (err) {
@@ -232,7 +234,7 @@ export const getCurrentUser = async (req, res) => {
 export const logout = async (req, res) => {
   const { sid } = req.signedCookies;
   await redisClient.del(`session:${sid}`);
-  res.clearCookie("sid");
+  res.clearCookie("sid", { sameSite: "none", secure: true });
   res.status(204).end();
 };
 
