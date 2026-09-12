@@ -63,16 +63,20 @@ export const loginWithGoogle = async (req, res, next) => {
         });
       }
 
-      const allSessions = await redisClient.ft.search(
-        "userIdIdx",
-        `@userId:{${user.id}}`,
-        {
-          RETURN: [],
-        }
-      );
+      try {
+        const allSessions = await redisClient.ft.search(
+          "userIdIdx",
+          `@userId:{${user.id}}`,
+          {
+            RETURN: [],
+          }
+        );
 
-      if (allSessions.total >= 2) {
-        await redisClient.del(allSessions.documents[0].id);
+        if (allSessions && allSessions.total >= 2) {
+          await redisClient.del(allSessions.documents[0].id);
+        }
+      } catch (e) {
+        console.warn("Google auth session limit check skipped:", e?.message);
       }
 
       if (!user.picture || !user.picture.includes("googleusercontent.com")) {
@@ -282,16 +286,20 @@ export const loginWithGithub = async (req, res, next) => {
         });
       }
 
-      const allSessions = await redisClient.ft.search(
-        "userIdIdx",
-        `@userId:{${user.id}}`,
-        {
-          RETURN: [],
-        }
-      );
+      try {
+        const allSessions = await redisClient.ft.search(
+          "userIdIdx",
+          `@userId:{${user.id}}`,
+          {
+            RETURN: [],
+          }
+        );
 
-      if (allSessions.total >= 2) {
-        await redisClient.del(allSessions.documents[0].id);
+        if (allSessions && allSessions.total >= 2) {
+          await redisClient.del(allSessions.documents[0].id);
+        }
+      } catch (e) {
+        console.warn("GitHub auth session limit check skipped:", e?.message);
       }
 
       if (user.picture && (user.picture.includes("vecteezy.com") || user.picture.includes("githubusercontent.com"))) {

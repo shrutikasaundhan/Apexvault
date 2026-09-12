@@ -142,16 +142,20 @@ export const login = async (req, res, next) => {
       return res.status(403).json({ error: "Your account has been deleted. Please contact administration." });
     }
 
-    const allSessions = await redisClient.ft.search(
-      "userIdIdx",
-      `@userId:{${user.id}}`,
-      {
-        RETURN: [],
-      }
-    );
+    try {
+      const allSessions = await redisClient.ft.search(
+        "userIdIdx",
+        `@userId:{${user.id}}`,
+        {
+          RETURN: [],
+        }
+      );
 
-    if (allSessions.total >= 2) {
-      await redisClient.del(allSessions.documents[0].id);
+      if (allSessions && allSessions.total >= 2) {
+        await redisClient.del(allSessions.documents[0].id);
+      }
+    } catch (searchErr) {
+      console.warn("Session search skipped:", searchErr?.message);
     }
 
     const sessionId = crypto.randomUUID();
@@ -326,15 +330,24 @@ export const updateUserByAdmin = async (req, res, next) => {
 
 export const logoutAll = async (req, res) => {
   const { sid } = req.signedCookies;
-  const session = await redisClient.json.get(`session:${sid}`);
-  const allSessions = await redisClient.ft.search(
-    "userIdIdx",
-    `@userId:{${session.userId}}`,
-    {
-      RETURN: [],
+  try {
+    const session = await redisClient.json.get(`session:${sid}`);
+    if (session && session.userId) {
+      const allSessions = await redisClient.ft.search(
+        "userIdIdx",
+        `@userId:{${session.userId}}`,
+        {
+          RETURN: [],
+        }
+      );
+      if (allSessions && allSessions.documents) {
+        await redisClient.del(allSessions.documents.map(({ id }) => id));
+      }
     }
-  );
-  await redisClient.del(allSessions.documents.map(({ id }) => id));
+  } catch (err) {
+    console.warn("logoutAll error handled:", err.message);
+  }
+  res.clearCookie("sid", { sameSite: "none", secure: true });
   res.status(204).end();
 };
 
