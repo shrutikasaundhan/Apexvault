@@ -129,13 +129,13 @@ export const login = async (req, res, next) => {
     console.log(user);
 
     if (!user) {
-      return res.status(404).json({ error: "Invalid Credentials" });
+      return res.status(401).json({ error: "Invalid Credentials" });
     }
 
     const isPasswordValid = await user.comparePassword(password);
 
     if (!isPasswordValid) {
-      return res.status(404).json({ error: "Invalid Credentials" });
+      return res.status(401).json({ error: "Invalid Credentials" });
     }
 
     if (user.deleted) {
