@@ -1,4 +1,4 @@
-import { createClient, SchemaFieldTypes } from "redis";
+import { createClient } from "redis";
 
 const redisUrl = process.env.REDIS_URL;
 
@@ -28,7 +28,7 @@ redisClient.on("ready", async () => {
       "userIdIdx",
       {
         "$.userId": {
-          type: SchemaFieldTypes.TAG,
+          type: "TAG",
           AS: "userId",
         },
       },
