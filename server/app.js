@@ -48,6 +48,10 @@ app.use(
   }),
 );
 
+app.get("/", (req, res) => {
+  res.send("Apexvault Backend API is Live! 🚀");
+});
+
 app.use("/directory", checkAuth, directoryRoutes);
 app.use("/file", checkAuth, fileRoutes);
 app.use("/", userRoutes);
