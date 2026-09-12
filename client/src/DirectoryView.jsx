@@ -322,7 +322,27 @@ function DirectoryView() {
     try {
       if (item.isDirectory) await deleteDirectory(item.id);
       else await deleteFile(item.id);
+      setTrashIds((prev) => prev.filter((id) => id !== item.id));
+      setStarredIds((prev) => prev.filter((id) => id !== item.id));
+      setSharedIds((prev) => prev.filter((id) => id !== item.id));
+      setSpamIds((prev) => prev.filter((id) => id !== item.id));
       setDeleteItem(null);
+      loadDirectory();
+    } catch (err) {
+      setErrorMessage(err.response?.data?.error || err.message);
+    }
+  }
+
+  async function handleEmptyTrash() {
+    const trashedItems = combinedItems.filter((item) => trashIds.includes(item.id));
+    if (trashedItems.length === 0) return;
+    if (!window.confirm("Are you sure you want to permanently delete all items in Trash?")) return;
+    try {
+      for (const item of trashedItems) {
+        if (item.isDirectory) await deleteDirectory(item.id);
+        else await deleteFile(item.id);
+      }
+      setTrashIds([]);
       loadDirectory();
     } catch (err) {
       setErrorMessage(err.response?.data?.error || err.message);
@@ -683,6 +703,24 @@ function DirectoryView() {
                     </button>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Trash Info Banner */}
+            {activeTab === "trash" && (
+              <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-2xl p-4 mb-6 flex items-center justify-between shadow-sm">
+                <div className="flex items-center gap-2 text-xs font-semibold text-amber-800 dark:text-amber-300">
+                  <FaTrash className="text-amber-600 dark:text-amber-400" />
+                  <span>Items in Trash can be restored or deleted permanently.</span>
+                </div>
+                {trashCount > 0 && (
+                  <button
+                    onClick={handleEmptyTrash}
+                    className="text-xs font-bold text-red-600 hover:text-red-700 dark:text-red-400 bg-white dark:bg-zinc-900 border border-red-200 dark:border-red-900/50 px-3.5 py-1.5 rounded-xl transition-all cursor-pointer hover:bg-red-50 shadow-sm"
+                  >
+                    Empty Trash
+                  </button>
+                )}
               </div>
             )}
 

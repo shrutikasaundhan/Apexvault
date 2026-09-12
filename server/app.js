@@ -1,7 +1,14 @@
-// Trigger reload
 import express from "express";
 import dns from "dns";
 dns.setDefaultResultOrder("ipv4first");
+
+process.on("unhandledRejection", (reason) => {
+  console.warn("Unhandled Promise Rejection (prevented crash):", reason?.message || reason);
+});
+
+process.on("uncaughtException", (err) => {
+  console.warn("Uncaught Exception (prevented crash):", err?.message || err);
+});
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import directoryRoutes from "./routes/directoryRoutes.js";
@@ -39,8 +46,8 @@ app.use("/directory", checkAuth, directoryRoutes);
 app.use("/file", checkAuth, fileRoutes);
 app.use("/", userRoutes);
 app.use("/auth", authRoutes);
-app.use("/subscription",checkAuth, subscriptionRoutes);
-app.use("/webhooks",webhookRoutes)
+app.use("/subscription", checkAuth, subscriptionRoutes);
+app.use("/webhooks", webhookRoutes)
 app.use((err, req, res, next) => {
   console.log(err);
   // res.status(err.status || 500).json({ error: "Something went wrong!" });
@@ -50,3 +57,7 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`Server Started`);
 });
+
+
+
+

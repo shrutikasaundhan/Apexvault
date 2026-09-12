@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "node --watch --no-deprecation --env-file=.env app.js",
-    "setup": "node --env-file=.env config/setup.js"
+    "start": "node  --no-deprecation app.js",
+    "setup": "node --env-file=.env config/setup.js",
+   
   },
   "keywords": [],
   "author": "",
@@ -22,7 +24,8 @@
     "express": "^4.21.2",
     "google-auth-library": "^9.15.1",
     "mime-types": "^3.0.1",
-    "mongoose": "^8.12.1",
+    "mongodb": "^7.6.0",
+    "mongoose": "^8.24.4",
     "nodemailer": "^9.0.4",
     "razorpay": "^2.9.8",
     "redis": "^6.1.0",

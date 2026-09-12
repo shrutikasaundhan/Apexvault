@@ -33,6 +33,13 @@ function ContextMenu({ item, isUploadingItem }) {
   const handleRestore = (e) => {
     e.stopPropagation();
     setTrashIds((prev) => prev.filter((id) => id !== item.id));
+    setActiveContextMenu(null);
+  };
+
+  const handleMoveToTrash = (e) => {
+    e.stopPropagation();
+    setTrashIds((prev) => (prev.includes(item.id) ? prev : [...prev, item.id]));
+    setActiveContextMenu(null);
   };
 
   const handleToggleSpam = (e) => {
@@ -42,6 +49,7 @@ function ContextMenu({ item, isUploadingItem }) {
         ? prev.filter((id) => id !== item.id)
         : [...prev, item.id]
     );
+    setActiveContextMenu(null);
   };
 
   const handleToggleShare = (e) => {
@@ -53,6 +61,7 @@ function ContextMenu({ item, isUploadingItem }) {
   const handleToggleStarClick = (e) => {
     e.stopPropagation();
     toggleStar(item.id);
+    setActiveContextMenu(null);
   };
 
   if (isDeleted) {
@@ -61,7 +70,14 @@ function ContextMenu({ item, isUploadingItem }) {
         <div className={`${itemClass} text-emerald-600 hover:text-emerald-700`} onClick={handleRestore}>
           Restore
         </div>
-        <div className={`${itemClass} text-red-600 hover:text-red-700`} onClick={(e) => { e.stopPropagation(); setDeleteItem(item); }}>
+        <div
+          className={`${itemClass} text-red-600 hover:text-red-700`}
+          onClick={(e) => {
+            e.stopPropagation();
+            setDeleteItem(item);
+            setActiveContextMenu(null);
+          }}
+        >
           Delete Permanently
         </div>
       </div>
@@ -86,6 +102,7 @@ function ContextMenu({ item, isUploadingItem }) {
           onClick={(e) => {
             e.stopPropagation();
             window.location.href = `http://localhost:4000/file/${item.id}?action=download`;
+            setActiveContextMenu(null);
           }}
         >
           Download
@@ -96,6 +113,7 @@ function ContextMenu({ item, isUploadingItem }) {
         onClick={(e) => {
           e.stopPropagation();
           openRenameModal(item.isDirectory ? "directory" : "file", item.id, item.name);
+          setActiveContextMenu(null);
         }}
       >
         Rename
@@ -109,10 +127,10 @@ function ContextMenu({ item, isUploadingItem }) {
       <div className={itemClass} onClick={handleToggleStarClick}>
         {isStarred ? "Remove Star" : "Add Star"}
       </div>
-      <div className={`${itemClass} text-red-600`} onClick={(e) => { e.stopPropagation(); setDeleteItem(item); }}>
-        Delete
+      <div className={`${itemClass} text-red-600`} onClick={handleMoveToTrash}>
+        Move to Trash
       </div>
-      <div className={itemClass} onClick={(e) => { e.stopPropagation(); openDetailsPopup(item); }}>
+      <div className={itemClass} onClick={(e) => { e.stopPropagation(); openDetailsPopup(item); setActiveContextMenu(null); }}>
         Details
       </div>
     </div>

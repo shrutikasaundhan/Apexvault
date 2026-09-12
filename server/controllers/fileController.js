@@ -128,6 +128,7 @@ export const getFile = async (req, res) => {
     });
     return res.redirect(fileUrl);
   } catch (err) {
+    console.error("Error retrieving file in getFile:", err);
     return res.status(500).json({ error: "Could not retrieve file" });
   }
 };

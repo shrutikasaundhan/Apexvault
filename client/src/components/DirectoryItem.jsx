@@ -78,6 +78,7 @@ function DirectoryItem({ item, uploadProgress }) {
     isUploading,
     starredIds = [],
     toggleStar,
+    trashIds = [],
     BASE_URL,
   } = useDirectoryContext();
 
@@ -140,10 +141,14 @@ function DirectoryItem({ item, uploadProgress }) {
   return (
     <div
       className="bg-white border border-gray-100 hover:border-blue-500 rounded-2xl px-5 py-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between cursor-pointer hover:shadow-md transition-all duration-200 group relative"
-      onClick={() =>
-        !(activeContextMenu || isUploading) &&
-        handleRowClick(item.isDirectory ? "directory" : "file", item.id)
-      }
+      onClick={(e) => {
+        if (activeContextMenu || isUploading) return;
+        if (trashIds.includes(item.id)) {
+          handleContextMenu(e, item.id);
+          return;
+        }
+        handleRowClick(item.isDirectory ? "directory" : "file", item.id);
+      }}
       onContextMenu={(e) => handleContextMenu(e, item.id)}
     >
       <div className="flex items-center flex-1 min-w-0">

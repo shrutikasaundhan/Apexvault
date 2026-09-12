@@ -6,6 +6,9 @@ const transporter = nodemailer.createTransport({
   port: 587,
   secure: false, // use false for STARTTLS (port 587)
   family: 4, // Force IPv4
+  connectionTimeout: 5000,
+  greetingTimeout: 5000,
+  socketTimeout: 8000,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -32,7 +35,7 @@ export async function sendOtpService(email) {
   const html = `
     <div style="font-family:sans-serif;">
       <h2>Your OTP is: ${otp}</h2>
-      <p>This OTP is valid for 10 minutes.</p>
+      <p>This OTP is valid for 2 minutes.</p>
     </div>
   `;
 
