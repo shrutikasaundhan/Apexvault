@@ -13,9 +13,9 @@ function getTransporter() {
       user,
       pass,
     },
-    connectionTimeout: 5000,
-    greetingTimeout: 5000,
-    socketTimeout: 5000,
+    connectionTimeout: 8000,
+    greetingTimeout: 8000,
+    socketTimeout: 8000,
   });
 }
 
@@ -45,20 +45,22 @@ export async function sendOtpService(email) {
     </div>
   `;
 
-  // 2. Dispatch email to Gmail SMTP asynchronously
+  // 2. Await actual delivery so the cloud server sends the email completely before finishing request
   const transporter = getTransporter();
   const sender = process.env.EMAIL_USER || "shrutigupta1907@gmail.com";
 
-  transporter.sendMail({
-    from: `"ApexVault" <${sender}>`,
-    to: email,
-    subject: `Your ApexVault Verification Code: ${otp}`,
-    html,
-  }).then((info) => {
+  try {
+    const info = await transporter.sendMail({
+      from: `"ApexVault" <${sender}>`,
+      to: email,
+      subject: `Your ApexVault Verification Code: ${otp}`,
+      html,
+    });
     console.log(`[EMAIL SUCCESS] OTP delivered to ${email}:`, info.messageId);
-  }).catch((err) => {
+  } catch (err) {
     console.error("[EMAIL ERROR] SMTP delivery error:", err.message);
-  });
+    throw new Error("Could not deliver OTP email. Please check your email address and try again.");
+  }
 
   return {
     success: true,
