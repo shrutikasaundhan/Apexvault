@@ -11,16 +11,13 @@ function getTransporter() {
       user,
       pass,
     },
-    tls: {
-      rejectUnauthorized: false,
-    },
   });
 }
 
 export async function sendOtpService(email) {
   const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
-  // 1. Immediately save OTP in MongoDB so it is ready for verification
+  // 1. Save OTP in MongoDB
   await OTP.findOneAndUpdate(
     { email },
     {
@@ -43,24 +40,24 @@ export async function sendOtpService(email) {
     </div>
   `;
 
-  // 2. Dispatch email asynchronously (non-blocking so API responds immediately)
-  const transporter = getTransporter();
-  const sender = process.env.EMAIL_USER || "shrutigupta1907@gmail.com";
-
-  transporter.sendMail({
-    from: `Apexvault <${sender}>`,
-    to: email,
-    subject: `Your Apexvault Verification Code: ${otp}`,
-    html,
-  }).then((info) => {
+  // 2. Await actual SMTP email delivery to ensure email is completely sent
+  try {
+    const transporter = getTransporter();
+    const sender = process.env.EMAIL_USER || "shrutigupta1907@gmail.com";
+    const info = await transporter.sendMail({
+      from: `"Apexvault" <${sender}>`,
+      to: email,
+      subject: `Your Apexvault Verification Code: ${otp}`,
+      html,
+    });
     console.log(`[EMAIL SUCCESS] OTP email delivered to ${email}:`, info.messageId);
-  }).catch((mailError) => {
-    console.error("[EMAIL ERROR] SMTP dispatch failed:", mailError.message);
-  });
+  } catch (mailError) {
+    console.error("[EMAIL ERROR] Failed to send email via SMTP:", mailError.message);
+    throw new Error("Unable to send OTP email. Please check email address or try again.");
+  }
 
   return {
     success: true,
-    message: `OTP sent successfully on ${email}`,
-    otp, // Returned so frontend / user can use it immediately without getting blocked
+    message: `OTP sent successfully to ${email}`,
   };
 }
