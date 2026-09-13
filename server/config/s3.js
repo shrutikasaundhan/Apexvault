@@ -1,5 +1,6 @@
 import { DeleteObjectCommand, DeleteObjectsCommand, GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import mime from "mime-types";
 
 export const s3Client = new S3Client({
   region: process.env.AWS_REGION || "ap-south-1",
@@ -27,9 +28,11 @@ export const createdUploadSignedUrl = async ({ key, contentType }) => {
 
 export const createGetSignedUrl = async ({ key, download = false, filename = "file" }) => {
   const safeFilename = filename.replace(/["\r\n]/g, "_");
+  const mimeType = mime.lookup(filename) || "application/octet-stream";
   const command = new GetObjectCommand({
     Bucket: "shruti-storage-app",
     Key: key,
+    ResponseContentType: mimeType,
     ResponseContentDisposition: `${download ? "attachment" : "inline"}; filename="${safeFilename}"; filename*=UTF-8''${encodeURIComponent(filename)}`
   });
 
