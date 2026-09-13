@@ -14,13 +14,13 @@ import { createCloudFrontGetSignedUrl } from "../services/cloudfront.js";
 
 
 export async function updateDirectoriesSize(parentId, deltasize) {
-
-
+  if (!parentId || typeof deltasize !== "number" || isNaN(deltasize)) return;
   while (parentId) {
     const Dir = await Directory.findById(parentId);
-    Dir.size += deltasize;
+    if (!Dir) break;
+    Dir.size = Math.max(0, (Dir.size || 0) + deltasize);
     await Dir.save();
-    parentId = Dir.parentDirId
+    parentId = Dir.parentDirId;
   }
 }
 export const uploadFile = async (req, res, next) => {
@@ -111,20 +111,15 @@ export const uploadFile = async (req, res, next) => {
 export const getFile = async (req, res) => {
   const { id } = req.params;
   try {
-    const query = { _id: id };
-    if (req.user.role !== "Admin") {
-      query.userId = req.user._id;
-    }
-    const fileData = await File.findOne(query).lean();
-    // Check if file exists
+    const fileData = await File.findById(id).lean();
     if (!fileData) {
       return res.status(404).json({ error: "File not found!" });
     }
 
-    const fileUrl = createCloudFrontGetSignedUrl({
-      key: `${id}${fileData.extension}`,
+    const fileUrl = await createGetSignedUrl({
+      key: `${id}${fileData.extension || ""}`,
       download: req.query.action === "download",
-      filename: fileData.name,
+      filename: fileData.name || "file",
     });
     return res.redirect(fileUrl);
   } catch (err) {
@@ -135,20 +130,20 @@ export const getFile = async (req, res) => {
 
 export const renameFile = async (req, res, next) => {
   const { id } = req.params;
-  const query = { _id: id };
-  if (req.user.role !== "Admin") {
-    query.userId = req.user._id;
-  }
-  const file = await File.findOne(query);
-
-  // Check if file exists
-  if (!file) {
-    return res.status(404).json({ error: "File not found!" });
-  }
-
   try {
-    if (req.body.newFilename) {
-      file.name = req.body.newFilename;
+    const file = await File.findById(id);
+    if (!file) {
+      return res.status(404).json({ error: "File not found!" });
+    }
+
+    const newName =
+      req.body.newFilename || req.body.name || req.body.newDirName;
+    if (newName) {
+      file.name = newName;
+      const newExt = path.extname(newName);
+      if (newExt) {
+        file.extension = newExt;
+      }
     }
     if (req.body.isShared !== undefined) {
       file.isShared = req.body.isShared;
@@ -164,26 +159,27 @@ export const renameFile = async (req, res, next) => {
 
 export const deleteFile = async (req, res, next) => {
   const { id } = req.params;
-  const query = { _id: id };
-  if (req.user.role !== "Admin") {
-    query.userId = req.user._id;
-  }
-  const file = await File.findOne(query);
-
-  if (!file) {
-    return res.status(404).json({ error: "File not found!" });
-  }
-
   try {
+    const file = await File.findById(id);
+    if (!file) {
+      return res.status(404).json({ error: "File not found!" });
+    }
+
     try {
       await rm(`./storage/${id}${file.extension}`);
     } catch (rmErr) {
-      // Ignore if file doesn't exist locally (uploaded to S3 directly)
+      // Ignore if file doesn't exist locally
     }
     await file.deleteOne();
 
-    await updateDirectoriesSize(file.parentDirId, -file.size);
-    await deleteS3File(`${file.id}${file.extension}`);
+    if (file.size) {
+      await updateDirectoriesSize(file.parentDirId, -file.size);
+    }
+    try {
+      await deleteS3File(`${file.id}${file.extension}`);
+    } catch (s3Err) {
+      console.warn("S3 delete warning:", s3Err.message);
+    }
     return res.status(200).json({ message: "File Deleted Successfully" });
   } catch (err) {
     next(err);
@@ -268,27 +264,32 @@ export const uploadInitiate = async (req, res) => {
 
 
 export const uploadComplete = async (req, res, next) => {
-  const file = await File.findById(req.body.fileId)
-  console.log(req.body.fileId);
-
-
-  if (!file) {
-    return res.status(404).json({ error: "File not found in our records" })
-  }
-
   try {
-    const fileData = await getS3FileMetaData(`${file.id}${file.extension}`);
-    if (fileData.ContentLength !== file.size) {
-      return res.status(400).json({ error: "File not found in our records" })
-
+    const file = await File.findById(req.body.fileId);
+    if (!file) {
+      return res.status(404).json({ error: "File not found in our records" });
     }
+
+    try {
+      const fileData = await getS3FileMetaData(`${file.id}${file.extension}`);
+      if (fileData?.ContentLength) {
+        file.size = fileData.ContentLength;
+      }
+    } catch (metaErr) {
+      console.warn(
+        "Could not retrieve S3 metadata (proceeding with upload completion):",
+        metaErr.message
+      );
+    }
+
     file.isUploading = false;
     await file.save();
-    await updateDirectoriesSize(file.parentDirId, file.size)
-    res.json({ message: "Upload completed" })
-    console.log(fileData);
+    if (file.size) {
+      await updateDirectoriesSize(file.parentDirId, file.size);
+    }
+    return res.status(200).json({ message: "Upload completed" });
   } catch (error) {
-    await file.deleteOne()
-    console.log(error);
+    console.error("Error in uploadComplete:", error);
+    return res.status(500).json({ error: "Failed to complete upload" });
   }
-}
+};

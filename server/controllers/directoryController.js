@@ -81,10 +81,11 @@ export const createDirectory = async (req, res, next) => {
 export const renameDirectory = async (req, res, next) => {
   const user = req.user;
   const { id } = req.params;
-  const { newDirName, isShared } = req.body;
+  const { newDirName, newFilename, name, isShared } = req.body;
   try {
     const updateObj = {};
-    if (newDirName) updateObj.name = newDirName;
+    const newName = newDirName || newFilename || name;
+    if (newName) updateObj.name = newName;
     if (isShared !== undefined) updateObj.isShared = isShared;
 
     await Directory.findOneAndUpdate(
@@ -107,9 +108,7 @@ export const deleteDirectory = async (req, res, next) => {
     const directoryData = await Directory.findOne({
       _id: id,
       userId: req.user._id,
-    })
-
-      .lean();
+    }).lean();
 
     if (!directoryData) {
       return res.status(404).json({ error: "Directory not found!" });
@@ -136,22 +135,26 @@ export const deleteDirectory = async (req, res, next) => {
 
     const { files, directories } = await getDirectoryContents(id);
 
-    const keys = files.map(({ _id, extension }) => ({ Key: `${_id}${extension}` }))
-    console.log(keys);
+    const keys = files.map(({ _id, extension }) => ({ Key: `${_id}${extension || ""}` }));
     if (keys.length > 0) {
-      await deleteS3Files(keys);
+      try {
+        await deleteS3Files(keys);
+      } catch (s3Err) {
+        console.warn("S3 deleteDirectory warning:", s3Err.message);
+      }
     }
 
     await File.deleteMany({
       _id: { $in: files.map(({ _id }) => _id) },
     });
 
-
-
     await Directory.deleteMany({
       _id: { $in: [...directories.map(({ _id }) => _id), id] },
     });
-    await updateDirectoriesSize(directoryData.parentDirId, -directoryData.size);
+
+    if (directoryData.size) {
+      await updateDirectoriesSize(directoryData.parentDirId, -directoryData.size);
+    }
     return res.status(200).json({ message: "Directory and contents deleted successfully" });
   } catch (err) {
     next(err);

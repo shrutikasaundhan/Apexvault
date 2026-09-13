@@ -225,7 +225,7 @@ function DirectoryView() {
 
   function handleRowClick(type, id) {
     if (type === "directory") navigate(`/directory/${id}`);
-    else window.location.href = `http://localhost:4000/file/${id}`;
+    else window.open(`${BASE_URL}/file/${id}`, "_blank");
   }
 
   async function handleFileSelect(e) {
@@ -275,6 +275,9 @@ function DirectoryView() {
     xhrRef.current = xhr;
 
     xhr.open("PUT", uploadSignedUrl);
+    if (item.file.type) {
+      xhr.setRequestHeader("Content-Type", item.file.type);
+    }
 
     xhr.upload.addEventListener("progress", (evt) => {
       if (evt.lengthComputable) {

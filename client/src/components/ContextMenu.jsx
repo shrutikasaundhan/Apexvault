@@ -101,7 +101,7 @@ function ContextMenu({ item, isUploadingItem }) {
           className={itemClass}
           onClick={(e) => {
             e.stopPropagation();
-            window.location.href = `http://localhost:4000/file/${item.id}?action=download`;
+            window.open(`${BASE_URL}/file/${item.id}?action=download`, "_blank");
             setActiveContextMenu(null);
           }}
         >
@@ -127,8 +127,18 @@ function ContextMenu({ item, isUploadingItem }) {
       <div className={itemClass} onClick={handleToggleStarClick}>
         {isStarred ? "Remove Star" : "Add Star"}
       </div>
-      <div className={`${itemClass} text-red-600`} onClick={handleMoveToTrash}>
+      <div className={itemClass} onClick={handleMoveToTrash}>
         Move to Trash
+      </div>
+      <div
+        className={`${itemClass} text-red-600 hover:text-red-700`}
+        onClick={(e) => {
+          e.stopPropagation();
+          setDeleteItem(item);
+          setActiveContextMenu(null);
+        }}
+      >
+        Delete
       </div>
       <div className={itemClass} onClick={(e) => { e.stopPropagation(); openDetailsPopup(item); setActiveContextMenu(null); }}>
         Details

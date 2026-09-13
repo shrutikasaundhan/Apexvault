@@ -121,18 +121,32 @@ export default function Plans() {
     loadUser();
   }, []);
 
-  useEffect(() => {
-    const razorpayscript = document.querySelector("#razorpay-script");
-    if (razorpayscript) return;
-    const script = document.createElement("script");
-    script.id = "razorpay-script";
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.async = true;
-    document.body.appendChild(script);
-  }, []);
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      if (window.Razorpay) return resolve(true);
+      const existing = document.getElementById("razorpay-script");
+      if (existing) {
+        existing.addEventListener("load", () => resolve(true));
+        existing.addEventListener("error", () => resolve(false));
+        return;
+      }
+      const script = document.createElement("script");
+      script.id = "razorpay-script";
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
 
   async function handleSelect(plan) {
     try {
+      const isLoaded = await loadRazorpayScript();
+      if (!isLoaded) {
+        alert("Failed to load Razorpay payment gateway. Please check your internet connection.");
+        return;
+      }
       const { subscriptionId } = await createSubscription(plan.id);
       console.log(subscriptionId);
       openRazorpayPopup({ subscriptionId });
@@ -285,7 +299,7 @@ function openRazorpayPopup({ subscriptionId }) {
     description: "Cloud storage vault subscription.",
     name: "ApexVault Pro",
     subscription_id: subscriptionId,
-    image: "http://localhost:5173/procodrr.png",
+    image: `${window.location.origin}/procodrr.png`,
     notes: {},
     handler: async function (response) {
       console.log("Razorpay payment response:", response);

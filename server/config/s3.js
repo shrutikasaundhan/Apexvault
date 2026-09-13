@@ -25,21 +25,20 @@ export const createdUploadSignedUrl = async ({ key, contentType }) => {
 };
 
 
-export const createGetSignedUrl = async ({ key, download = false, filename }) => {
+export const createGetSignedUrl = async ({ key, download = false, filename = "file" }) => {
+  const safeFilename = filename.replace(/["\r\n]/g, "_");
   const command = new GetObjectCommand({
     Bucket: "shruti-storage-app",
     Key: key,
-    ResponseContentDisposition: `${download ? 'attachment' : 'inline'};filename=${encodeURIComponent(filename)}`
+    ResponseContentDisposition: `${download ? "attachment" : "inline"}; filename="${safeFilename}"; filename*=UTF-8''${encodeURIComponent(filename)}`
   });
 
   const url = await getSignedUrl(s3Client, command, {
     expiresIn: 300,
-
   });
 
   return url;
-
-}
+};
 
 
 export const getS3FileMetaData = async (key) => {
