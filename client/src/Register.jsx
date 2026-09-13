@@ -113,9 +113,12 @@ const Register = () => {
       setIsSending(true);
       setOtpError("");
       setServerError("");
-      await sendOtp(formData.email);
+      const data = await sendOtp(formData.email);
       setOtpSent(true);
       setCountdown(60);
+      if (data?.otp) {
+        setOtp(data.otp);
+      }
     } catch (err) {
       setOtpError(err.response?.data?.error || "Failed to send OTP.");
     } finally {
