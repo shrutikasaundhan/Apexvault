@@ -116,10 +116,17 @@ export const getFile = async (req, res) => {
       return res.status(404).json({ error: "File not found!" });
     }
 
+    if (req.query.action === "download") {
+      const fileUrl = await createGetSignedUrl({
+        key: `${id}${fileData.extension || ""}`,
+        download: true,
+        filename: fileData.name || "file",
+      });
+      return res.redirect(fileUrl);
+    }
+
     const fileUrl = createCloudFrontGetSignedUrl({
       key: `${id}${fileData.extension || ""}`,
-      download: req.query.action === "download",
-      filename: fileData.name || "file",
     });
     return res.redirect(fileUrl);
   } catch (err) {

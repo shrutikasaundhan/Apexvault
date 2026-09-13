@@ -21,16 +21,10 @@ const keyPairId = process.env.CLOUDFRONT_KEY_PAIR_ID || "K1J5NOS60W19OC";
 const distributionName =
   process.env.CLOUDFRONT_DISTRIBUTION_DOMAIN || "d1rnyyplodicpd.cloudfront.net";
 
-export const createCloudFrontGetSignedUrl = ({
-  key,
-  download = false,
-  filename = "file",
-}) => {
+export const createCloudFrontGetSignedUrl = ({ key }) => {
   const privateKey = getPrivateKey();
   const dateLessThan = new Date(Date.now() + 1000 * 60 * 60).toISOString();
-  const safeFilename = filename.replace(/["\r\n]/g, "_");
-  const disposition = `${download ? "attachment" : "inline"}; filename="${safeFilename}"; filename*=UTF-8''${encodeURIComponent(filename)}`;
-  const url = `https://${distributionName}/${key}?response-content-disposition=${encodeURIComponent(disposition)}`;
+  const url = `https://${distributionName}/${key}`;
 
   const signedUrl = getSignedUrl({
     url,
