@@ -116,7 +116,7 @@ export const getFile = async (req, res) => {
       return res.status(404).json({ error: "File not found!" });
     }
 
-    const fileUrl = await createGetSignedUrl({
+    const fileUrl = createCloudFrontGetSignedUrl({
       key: `${id}${fileData.extension || ""}`,
       download: req.query.action === "download",
       filename: fileData.name || "file",
