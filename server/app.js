@@ -59,9 +59,9 @@ app.use("/auth", authRoutes);
 app.use("/subscription", checkAuth, subscriptionRoutes);
 app.use("/webhooks", webhookRoutes)
 app.use((err, req, res, next) => {
-  console.log(err);
-  // res.status(err.status || 500).json({ error: "Something went wrong!" });
-  res.json(err);
+  console.error("Global error:", err);
+  const status = err.status || err.statusCode || 500;
+  res.status(status).json({ error: err.message || "Something went wrong!" });
 });
 
 app.listen(PORT, () => {
