@@ -9,6 +9,16 @@ const client = mongoose.connection.getClient();
 
 try {
   const db = mongoose.connection.db;
+  const collections = await db.listCollections().toArray();
+  const existingNames = collections.map((c) => c.name);
+
+  for (const name of ["users", "directories", "files"]) {
+    if (!existingNames.includes(name)) {
+      await db.createCollection(name);
+      console.log(`Created collection '${name}'`);
+    }
+  }
+
   const command = "collMod";
 
   await db.command({
