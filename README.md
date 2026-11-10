@@ -19,6 +19,10 @@ A comprehensive full-stack application with a React-based frontend and a Node.js
 - **Emailing:** Resend, Nodemailer
 - **Validation:** Zod
 
+### Production Deployment
+- **Frontend Live URL (Netlify):** [https://apexvault-1.netlify.app](https://apexvault-1.netlify.app)
+- **Backend Live URL (Render):** [https://apexvault-1.onrender.com](https://apexvault-1.onrender.com)
+
 ---
 
 ## 📁 Project Structure
